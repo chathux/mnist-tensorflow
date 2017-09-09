@@ -36,17 +36,29 @@ def getLabelData(path='./data/t10k-labels.idx1-ubyte'):
         return np.reshape(arr,(size, 1));
 
 
+
 def prepareDataSets():
     '''
     load & prepare mnist datasets. returns train and test sets.   
     '''
+    
+    
     train_X = getImageData('./data/train-images.idx3-ubyte');
     train_Y = getLabelData('./data/train-labels.idx1-ubyte');
-    
     test_X = getImageData('./data/t10k-images.idx3-ubyte');
     test_Y = getLabelData('./data/t10k-labels.idx1-ubyte');
-    pass;
 
+
+       
+    train_X_prep = train_X.reshape(train_X.shape[0], train_X.shape[1] * train_X.shape[2]);
+    test_X_prep = test_X.reshape(test_X.shape[0], test_X.shape[1] * test_X.shape[2]);
+
+    with tf.Session() as sess:
+        
+        train_Y_prep = sess.run(tf.one_hot(train_Y.reshape(-1), 10, axis=1));
+        test_X_prep = sess.run(tf.one_hot(test_Y.reshape(-1), 10, axis=1));
+
+    return train_X, train_Y, test_X, test_Y;
 
 def initializeWeights():
     '''
