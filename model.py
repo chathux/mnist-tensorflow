@@ -12,9 +12,10 @@ import numpy as np;
 #set current working directory
 os.chdir('E:\Data\Projects\mnist-tensorflow')
 
-#interprets mnist image files and returns a 3 - dimensional vector.
 def getImageData(path='./data/t10k-images.idx3-ubyte'):
-    
+    '''
+    interprets mnist image files and returns a 3 - dimensional vector.
+    '''
 
     arr = [];
     with open(path, "rb") as file:
@@ -23,8 +24,10 @@ def getImageData(path='./data/t10k-images.idx3-ubyte'):
         arr = np.fromfile(file, dtype=np.dtype(np.uint8))    
         return np.reshape(arr, (size, rows, cols));
 
-#interprets mnist label data and returns a 1 - dimensional array
 def getLabelData(path='./data/t10k-labels.idx1-ubyte'):
+    '''
+    interprets mnist label data and returns a 1 - dimensional array
+    '''
     
     arr = [];
     with open(path, "rb") as file:
@@ -33,10 +36,52 @@ def getLabelData(path='./data/t10k-labels.idx1-ubyte'):
         return np.reshape(arr,(size, 1));
 
 
-train_X = getImageData('./data/train-images.idx3-ubyte');
-train_Y = getLabelData('./data/train-labels.idx1-ubyte');
+def prepareDataSets():
+    '''
+    load & prepare mnist datasets. returns train and test sets.   
+    '''
+    train_X = getImageData('./data/train-images.idx3-ubyte');
+    train_Y = getLabelData('./data/train-labels.idx1-ubyte');
+    
+    test_X = getImageData('./data/t10k-images.idx3-ubyte');
+    test_Y = getLabelData('./data/t10k-labels.idx1-ubyte');
+    pass;
 
-test_X = getImageData('./data/t10k-images.idx3-ubyte');
-test_Y = getLabelData('./data/t10k-labels.idx1-ubyte');
+
+def initializeWeights():
+    '''
+    initialize the weights for the 3 layer neueral network
+    '''
+    
+    tf.reset_default_graph();
+    W1 = tf.get_variable("W1", shape=[10, 784], initializer=tf.contrib.layers.xavier_initializer(seed=1));
+    b1 = tf.get_variable("b1", shape=[10, 1], initializer=tf.zeros_initializer());
+    
+    W2 = tf.get_variable("W2", shape=[10, 10], initializer=tf.contrib.layers.xavier_initializer(seed=1));
+    b2 = tf.get_variable("b2", shape=[10, 1], initializer=tf.zeros_initializer());
+    
+    return {"W1" : W1, "b1" : b1,
+            "W2" : W2, "b2" : b2};
+
+def forwardPropagate(X, weights):
+    '''
+    implements forward propation of the neural network
+    '''
+    
+    W1 = weights["W1"];
+    b1 = weights["b1"];
+    W2 = weights["W2"];
+    b2 = weights["b2"];
+    
+    A1 = tf.sigmoid(tf.matmul(W1, X.T) + b1);
+    A2 = tf.sigmoid(tf.matmul(W2, A1) + b2);
+    
+    return A2;
+    
+def trainNN():
+    pass;
+    
+    
+
 
 
