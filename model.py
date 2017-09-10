@@ -9,6 +9,7 @@ import tensorflow as tf;
 import os as os
 import struct as struct;
 import numpy as np;
+import pickle as pk;
 #set current working directory
 os.chdir('E:\Data\Projects\mnist-tensorflow')
 
@@ -36,6 +37,25 @@ def getLabelData(path='./data/t10k-labels.idx1-ubyte'):
         return np.reshape(arr,(size, 1));
 
 
+def serializeWeights(weights={}, filename=""):
+    '''
+    saves the given weight dictionary to a file
+    '''
+    weight_output = open("./weights/"+ filename, "wb+");
+    pk.dump(weights, weight_output)
+    weight_output.close();
+    
+    
+def deserializeWeights(filename=""):
+    '''
+    returns pickle serialzied data structure from a file
+    '''
+    
+    weight_input = open("./weights/" + filename, "rb+");
+    weights_deserialized = pk.load(weight_input);
+    weight_input.close();    
+    
+    return weights_deserialized;
 
 def prepareDataSets():
     '''
@@ -156,14 +176,23 @@ def predict(test_X, weights):
 
     return pred_Y;
 
+
+
+#load data sets
 train_X, train_Y, test_X, test_Y = prepareDataSets();
 
+#train the NN
 weights, cost_arr = trainNN(train_X, train_Y, iterations=1500);
 
-pred_train_Y = predict(train_X, weights);
-pred_test_Y = predict(test_X, weights);
+#saves weights
+serializeWeights(weights, "weights_0.pkl")
 
 
+#get train and test set predictions
+pred_train_Y = predict(train_X, deserializeWeights("weights_0.pkl"));
+pred_test_Y = predict(test_X, deserializeWeights("weights_0.pkl"));
+
+#using accuracy as a evaluation metric
 print("Train Accuracy :%f, Test Accuracy : %f"%
       (
       tf.Session().run(tf.reduce_mean(tf.cast(tf.equal(pred_train_Y, tf.argmax(train_Y, axis=-1)), "float"))),
@@ -172,3 +201,7 @@ print("Train Accuracy :%f, Test Accuracy : %f"%
 )
 #Adam Optimizer 
 #Train Accuracy :0.871917, Test Accuracy : 0.839900
+      
+
+
+
