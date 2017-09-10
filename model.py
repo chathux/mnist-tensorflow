@@ -94,8 +94,13 @@ def forwardPropagate(X, weights):
 def trainNN(train_X, train_Y, learning_rate=0.001, iterations=20):
     '''
     trains the neural network.
-    returns the optimized weights as a dictionary.
+    returns
+        weights - the optimized weights as a dictionary.
+        cost_arr   -1 dimensional array containing cost for each iteration
     '''
+    
+    cost_arr = [];
+    
     
     tf.reset_default_graph();
     
@@ -109,8 +114,11 @@ def trainNN(train_X, train_Y, learning_rate=0.001, iterations=20):
     logits = forwardPropagate(X, weights); 
     
     
+    #cost function
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=tf.transpose(logits),  labels=Y));
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost);
+    
+    #using the gradient descent optimizer
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost);
     
     with tf.Session() as sess:
             
@@ -122,10 +130,16 @@ def trainNN(train_X, train_Y, learning_rate=0.001, iterations=20):
         for i in range(0,iterations):
 
             epoch_cost, _ = sess.run([cost, optimizer], feed_dict={X:train_X_T, Y:train_Y });
-            print("epoch %i cost : %f "%(i, epoch_cost));
+
+            #insert the current cost at the end of the list
+            cost_arr.append(epoch_cost);
+            
+            #show cost per 100 epochs
+            if(i % 100 == 0):
+                print("epoch %i cost : %f"%(i, epoch_cost));
             
         weights = sess.run(weights);    
-    return weights;
+    return weights, cost_arr;
     
 def predict(test_X, weights):
     '''
@@ -144,7 +158,7 @@ def predict(test_X, weights):
 
 train_X, train_Y, test_X, test_Y = prepareDataSets();
 
-weights = trainNN(train_X, train_Y, iterations=1500);
+weights, cost_arr = trainNN(train_X, train_Y, iterations=1500);
 
 pred_train_Y = predict(train_X, weights);
 pred_test_Y = predict(test_X, weights);
@@ -156,7 +170,5 @@ print("Train Accuracy :%f, Test Accuracy : %f"%
       tf.Session().run(tf.reduce_mean(tf.cast(tf.equal(pred_test_Y, tf.argmax(test_Y, axis=-1)), "float")))
       )
 )
-#20 - 0.079599999
-#100 - 0.1185
-#200 - 0.1603
-#1500- train : 0.445450 test - 0.451300
+#Adam Optimizer 
+#Train Accuracy :0.871917, Test Accuracy : 0.839900
